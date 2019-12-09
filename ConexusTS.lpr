@@ -186,7 +186,7 @@ begin
   if HasOption('l', 'license') then
     begin
       //show Conexus license
-      WriteLn('Conexus TS V'+STR_Version+' (c) '+STR_Date[1..4]+' Alexander Feuster (alexander.feuster@web.de)'+#13#10+
+      WriteLn('ConexusTS V'+STR_Version+' (c) '+STR_Date[1..4]+' Alexander Feuster (alexander.feuster@web.de)'+#13#10+
               'http://www.github.com/feuster'+#13#10+
               'This program is provided "as-is" without any warranties for any data loss,'+#13#10+
               'device defects etc. Use at own risk!'+#13#10+
@@ -407,6 +407,7 @@ begin
             end;
         end;
 
+      //send button
       Command:=UpperCase((GetOptionValue('s', 'sendbutton')));
       Buffer2:=tsapi_BtnCodeByName(Command);
       if Buffer2>=128 then
@@ -456,7 +457,7 @@ end;
 
 procedure TApp.WriteHelp;
 begin
-  { add your help code here }
+//long help
   WriteLn('General usage:          ', ExtractFileName(ExeName), ' --url=[IP or LOCAL DOMAIN] --pin=[DEVICE PIN] --sendbutton=[CODE or NAME]');
   WriteLn('                        or');
   WriteLn('                        ', ExtractFileName(ExeName), ' -u [IP or LOCAL DOMAIN] -p [DEVICE PIN] -s [CODE or NAME]');
