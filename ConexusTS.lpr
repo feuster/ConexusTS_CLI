@@ -13,7 +13,7 @@ program ConexusTS;
 |___________________________________________________________}
 
 //define program basics
-{$DEFINE PROGVERSION:='1.0'}
+{$DEFINE PROGVERSION:='1.1'}
 //{$DEFINE PROG_DEBUG}
 {___________________________________________________________}
 
@@ -301,17 +301,20 @@ begin
     end;
 
   //check for existing command
-  if (HasOption('c', 'command')) or (HasOption('s', 'sendbutton'))then
+  if HasOption('c', 'command') then
     begin
       if HasOption('c', 'command') then
         Command:=UpperCase((GetOptionValue('c', 'command')));
     end
   else
     begin
-      WriteLn(STR_Error+'No command specified');
-      HelpHint;
-      Terminate;
-      Exit;
+      if not (HasOption('s', 'sendbutton')) then
+        begin
+          WriteLn(STR_Error+'No command specified');
+          HelpHint;
+          Terminate;
+          Exit;
+        end;
     end;
 
   //read device information
@@ -359,6 +362,26 @@ begin
       Exit;
     end;
 
+  //send zoom request
+  if AnsiLeftStr(Command,4)='ZOOM' then
+    begin
+      Buffer3:=TStringList.Create;
+      Buffer3.Text:=Command;
+      if Buffer3.Strings[0].Split(':')[1]<>'' then
+        begin
+          Buffer4:=StrToInt(Buffer3.Strings[0].Split(':')[1]);
+          if tsapi_zoomRequest(URL, PIN, Buffer4, INT_Timeout)=true then
+            WriteLn(STR_Info,'Zoom request with value "'+IntToStr(Buffer4)+'" should be successful!')
+          else
+            WriteLn(STR_Info,'Zoom request with value "'+IntToStr(Buffer4)+'" failed (possibly device not found/inactive or wrong PIN)!');
+        end
+      else
+        WriteLn(STR_Info,'Zoom request has no value!');
+      Terminate;
+      Exit;
+    end;
+
+
   //PIN check
   if HasOption('p', 'pin') then
     begin
@@ -374,8 +397,8 @@ begin
       if Pos('pin=',LowerCase(Buffer))=0 then
         begin
           WriteLn(STR_Error+'No PIN specified');
-          WriteLn(STR_Warning+'Trying default PIN "1234"');
-          PIN:='1234';
+          WriteLn(STR_Warning+'Trying default PIN "0000"');
+          PIN:='0000';
         end;
       Buffer:='';
       Buffer4:=0;
@@ -384,10 +407,10 @@ begin
   //send authenticate request
   if Command='AUTHENTICATION' then
     begin
-      if tsapi_Info_Authentication(URL,PIN, INT_Timeout)=true then
+      if tsapi_Info_Authentication(URL, PIN, INT_Timeout)=true then
         WriteLn(STR_Info,'Authentication request successful!')
       else
-        WriteLn(STR_Info,'Authentication request failed (possibly device not found/inactive or wrong PIN)!');
+        WriteLn(STR_Info,'Authentication request with PIN "'+PIN+'" failed (possibly device not found/inactive or wrong PIN)!');
       Terminate;
       Exit;
     end;
@@ -409,27 +432,35 @@ begin
 
       //send button
       Command:=UpperCase((GetOptionValue('s', 'sendbutton')));
-      Buffer2:=tsapi_BtnCodeByName(Command);
-      if Buffer2>=128 then
-        Buffer2:=StrToInt(Command);
+      Buffer4:=tsapi_BtnCodeByName(Command);
+      if Buffer4>=128 then
+        begin
+          if TryStrToInt(Command,Buffer4)=false then
+            begin
+              WriteLn(STR_Error+'Incorrect RCU code or button "'+Command+'" specified');
+              HelpHint;
+              Terminate;
+              Exit;
+            end;
+        end;
       if ButtonState='' then
         begin
-          if tsapi_rcuButtonRequest(URL,PIN,Buffer2,tsapi_ButtonStates[0], INT_Timeout)=true then
+          if tsapi_rcuButtonRequest(URL, PIN, Buffer4, tsapi_ButtonStates[0], INT_Timeout)=true then
             begin
-              if tsapi_rcuButtonRequest(URL,PIN,Buffer2,tsapi_ButtonStates[1], INT_Timeout)=true then
-                WriteLn(STR_Info,'Sendbutton "'+tsapi_BtnDescByCode(Buffer2)+'" should be successful!')
+              if tsapi_rcuButtonRequest(URL, PIN, Buffer4, tsapi_ButtonStates[1], INT_Timeout)=true then
+                WriteLn(STR_Info,'Sendbutton "'+tsapi_BtnDescByCode(Buffer4)+'" should be successful!')
               else
-                WriteLn(STR_Info,'Sendbutton "'+tsapi_BtnDescByCode(Buffer2)+'" failed (possibly device not found/inactive or wrong PIN)!');
+                WriteLn(STR_Info,'Sendbutton "'+tsapi_BtnDescByCode(Buffer4)+'" failed (possibly device not found/inactive or wrong PIN)!');
             end
           else
-            WriteLn(STR_Info,'Sendbutton "'+tsapi_BtnDescByCode(Buffer2)+'" failed (possibly device not found/inactive or wrong PIN)!');
+            WriteLn(STR_Info,'Sendbutton "'+tsapi_BtnDescByCode(Buffer4)+'" failed (possibly device not found/inactive or wrong PIN)!');
         end
       else
         begin
-          if tsapi_rcuButtonRequest(URL,PIN,Buffer2,ButtonState, INT_Timeout)=true then
-            WriteLn(STR_Info,'Sendbutton "'+tsapi_BtnDescByCode(Buffer2)+'" with "'+ButtonState+'" should be successful!')
+          if tsapi_rcuButtonRequest(URL, PIN, Buffer4, ButtonState, INT_Timeout)=true then
+            WriteLn(STR_Info,'Sendbutton "'+tsapi_BtnDescByCode(Buffer4)+'" with "'+ButtonState+'" should be successful!')
           else
-            WriteLn(STR_Info,'Sendbutton "'+tsapi_BtnDescByCode(Buffer2)+'" with "'+ButtonState+'" failed (possibly device not found/inactive or wrong PIN)!');
+            WriteLn(STR_Info,'Sendbutton "'+tsapi_BtnDescByCode(Buffer4)+'" with "'+ButtonState+'" failed (possibly device not found/inactive or wrong PIN)!');
         end;
     end
   else
@@ -465,6 +496,10 @@ begin
   WriteLn('                        ', ExtractFileName(ExeName), ' --url=[IP or LOCAL DOMAIN] --pin=[DEVICE PIN] --command=[COMMAND]');
   WriteLn('                        or');
   WriteLn('                        ', ExtractFileName(ExeName), ' -u [IP or LOCAL DOMAIN] -p [DEVICE PIN] -c [COMMAND]');
+  WriteLn('                        or');
+  WriteLn('                        ', ExtractFileName(ExeName), ' --url=[IP or LOCAL DOMAIN] --pin=[DEVICE PIN] --command=[COMMAND]:[+/-VALUE]');
+  WriteLn('                        or');
+  WriteLn('                        ', ExtractFileName(ExeName), ' -u [IP or LOCAL DOMAIN] -p [DEVICE PIN] -c [COMMAND]:[+/-VALUE]');
   WriteLn('');
   WriteLn('General usage examples: ', ExtractFileName(ExeName), ' --url=192.168.0.34 --pin=1234 --sendbutton=BTN_OK');
   WriteLn('                        ', ExtractFileName(ExeName), ' --url=192.168.0.34 --pin=1234 --command=DEVICEINFO');
@@ -472,13 +507,20 @@ begin
   WriteLn('                        ', ExtractFileName(ExeName), ' -u TECHNIVISTA-SL.fritz.box -p 9999 -c keepalive');
   WriteLn('                        ', ExtractFileName(ExeName), ' -u "@TECHNIBOX UHD S" -p 1234 -s 12');
   WriteLn('                        ', ExtractFileName(ExeName), ' --url=192.168.0.34 -p 1234 -s 12 --buttonstate="pressed"');
+  WriteLn('                        ', ExtractFileName(ExeName), ' --url=192.168.0.34 -p 1234 --command="zoom:-2"');
   WriteLn('');
   WriteLn('Usage hints:            Values with one or more spaces the value must be quoted with " (for e.g. "@DEVICENAME").');
+  WriteLn('                        Some commands need additional values. These values are added with ":" after the command.');
+  WriteLn('                        The PIN will only be used if a authentication is needed. So if the device is already');
+  WriteLn('                        authenticated, no or also a wrong PIN will work, too, as long as the authentication)');
+  WriteLn('                        must not be renewed.');
   WriteLn('');
   WriteLn('List of commands for use with -c (--command):');
   WriteLn('AUTHENTICATION          Starts Authentication process.  URL and PIN are also required.');
   WriteLn('DEVICEINFO              Read device info (authenticate first, no PIN needed).');
   WriteLn('KEEPALIVE               Send a keep-alive request (authenticate first, no PIN needed).');
+  WriteLn('ZOOM:                   Send a zoom request (authenticate first, no PIN needed).');
+  WriteLn('                        ZOOM IN with a positive value, for e.g. 1, and ZOOM OUT with a negative value, for e.g. -1.');
   WriteLn('');
   WriteLn('Program functions:');
   WriteLn('Special commands   ', ExtractFileName(ExeName), ' -c (--command)');
@@ -489,10 +531,12 @@ begin
   WriteLn('                   The serial should start with 0008xxxxxxxxxxxx.');
   WriteLn('                   The device name or serial must be quoted with ", for e.g. -u "@0008abcdef123456".');
   WriteLn('                   Using the device name or serial slows down the RCU sendbutton process a little bit.'+#13#10);
+  WriteLn('PIN                ', ExtractFileName(ExeName), ' -p (--pin)');
+  WriteLn('                   PIN for the authentication. The PIN can only be set in the target device.'+#13#10);
   WriteLn('Send RCU button    ', ExtractFileName(ExeName), ' -s (--sendbutton)');
-  WriteLn('                   Send a RCU button. URL and PIN are also required.'+#13#10);
+  WriteLn('                   Send a RCU button. URL and PIN are also required. See possible buttons with -r (--rcucommands).'+#13#10);
   WriteLn('Use button state   ', ExtractFileName(ExeName), ' -t (--buttonstate)');
-  WriteLn('                   Optionally defines a state for the send RCU button.');
+  WriteLn('                   Optionally defines a state for the to send RCU button.');
   WriteLn('                   Allowed states are "pressed", "released" and "hold".');
   WriteLn('                   Depending on the send RCU button the sendbutton command must be used twice');
   WriteLn('                   one time with "pressed" and again with "released".'+#13#10);

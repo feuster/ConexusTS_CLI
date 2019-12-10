@@ -3,24 +3,28 @@
   <ProjectSession>
     <PathDelim Value="\"/>
     <Version Value="11"/>
-    <BuildModes Active="Windows i386 (32Bit)"/>
+    <BuildModes Active="Windows x86_64 (64Bit)"/>
     <Units Count="6">
       <Unit0>
         <Filename Value="ConexusTS.lpr"/>
         <IsPartOfProject Value="True"/>
-        <TopLine Value="499"/>
-        <CursorPos Y="460"/>
-        <UsageCount Value="64"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="489"/>
+        <CursorPos X="41" Y="501"/>
+        <UsageCount Value="70"/>
+        <Bookmarks Count="2">
+          <Item0 X="25" Y="438"/>
+          <Item1 Y="370" ID="1"/>
+        </Bookmarks>
         <Loaded Value="True"/>
       </Unit0>
       <Unit1>
         <Filename Value="TechniSatAPI.pas"/>
         <IsPartOfProject Value="True"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="34"/>
-        <CursorPos Y="5"/>
-        <UsageCount Value="64"/>
+        <TopLine Value="118"/>
+        <CursorPos X="134" Y="159"/>
+        <UsageCount Value="70"/>
         <Loaded Value="True"/>
       </Unit1>
       <Unit2>
@@ -29,149 +33,149 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="29"/>
         <CursorPos X="11" Y="45"/>
-        <UsageCount Value="7"/>
+        <UsageCount Value="6"/>
       </Unit2>
       <Unit3>
         <Filename Value="C:\lazarus\components\lazutils\lazutf8.pas"/>
         <UnitName Value="LazUTF8"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="8"/>
       </Unit3>
       <Unit4>
         <Filename Value="Indy10\Core\IdUDPClient.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="331"/>
         <CursorPos X="68" Y="347"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
       </Unit4>
       <Unit5>
         <Filename Value="Indy10\Core\IdIOHandler.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="1372"/>
         <CursorPos X="19" Y="1389"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
       </Unit5>
     </Units>
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="ConexusTS.lpr"/>
-        <Caret Line="270" Column="76" TopLine="264"/>
+        <Filename Value="TechniSatAPI.pas"/>
+        <Caret Line="109" Column="25" TopLine="103"/>
       </Position1>
       <Position2>
-        <Filename Value="TechniSatAPI.pas"/>
-        <Caret Line="117" Column="16" TopLine="97"/>
+        <Filename Value="ConexusTS.lpr"/>
+        <Caret Line="386" Column="45" TopLine="366"/>
       </Position2>
       <Position3>
-        <Filename Value="TechniSatAPI.pas"/>
-        <Caret Line="308" Column="32" TopLine="288"/>
+        <Filename Value="ConexusTS.lpr"/>
+        <Caret Line="383" Column="17" TopLine="367"/>
       </Position3>
       <Position4>
-        <Filename Value="TechniSatAPI.pas"/>
-        <Caret Line="332" Column="24" TopLine="309"/>
+        <Filename Value="ConexusTS.lpr"/>
+        <Caret Line="95" Column="10" TopLine="81"/>
       </Position4>
       <Position5>
         <Filename Value="TechniSatAPI.pas"/>
-        <Caret Line="346" Column="24" TopLine="323"/>
+        <Caret Line="884" Column="9" TopLine="869"/>
       </Position5>
       <Position6>
         <Filename Value="TechniSatAPI.pas"/>
-        <Caret Line="740" Column="50" TopLine="724"/>
+        <Caret Line="890" TopLine="868"/>
       </Position6>
       <Position7>
         <Filename Value="ConexusTS.lpr"/>
-        <Caret Line="273" Column="32" TopLine="261"/>
+        <Caret Line="345" Column="43" TopLine="329"/>
       </Position7>
       <Position8>
         <Filename Value="ConexusTS.lpr"/>
-        <Caret Line="274" Column="41" TopLine="257"/>
+        <Caret Line="284" Column="13" TopLine="268"/>
       </Position8>
       <Position9>
         <Filename Value="ConexusTS.lpr"/>
-        <Caret Line="273" Column="179" TopLine="252"/>
+        <Caret Line="104" Column="5" TopLine="79"/>
       </Position9>
       <Position10>
         <Filename Value="TechniSatAPI.pas"/>
-        <Caret Line="109" Column="25" TopLine="103"/>
+        <Caret Line="32" Column="32" TopLine="15"/>
       </Position10>
       <Position11>
-        <Filename Value="ConexusTS.lpr"/>
-        <Caret Line="386" Column="45" TopLine="366"/>
+        <Filename Value="TechniSatAPI.pas"/>
+        <Caret Line="33" Column="32" TopLine="15"/>
       </Position11>
       <Position12>
-        <Filename Value="ConexusTS.lpr"/>
-        <Caret Line="383" Column="17" TopLine="367"/>
+        <Filename Value="TechniSatAPI.pas"/>
+        <Caret Line="349" Column="145" TopLine="335"/>
       </Position12>
       <Position13>
         <Filename Value="ConexusTS.lpr"/>
-        <Caret Line="95" Column="10" TopLine="81"/>
+        <Caret Line="106" Column="67" TopLine="79"/>
       </Position13>
       <Position14>
         <Filename Value="TechniSatAPI.pas"/>
-        <Caret Line="884" Column="9" TopLine="869"/>
+        <Caret Line="924" Column="142" TopLine="916"/>
       </Position14>
       <Position15>
         <Filename Value="TechniSatAPI.pas"/>
-        <Caret Line="890" TopLine="868"/>
+        <Caret Line="251" TopLine="237"/>
       </Position15>
       <Position16>
         <Filename Value="ConexusTS.lpr"/>
-        <Caret Line="345" Column="43" TopLine="329"/>
+        <Caret Line="5" Column="13"/>
       </Position16>
       <Position17>
         <Filename Value="ConexusTS.lpr"/>
-        <Caret Line="284" Column="13" TopLine="268"/>
+        <Caret Line="284" Column="24" TopLine="263"/>
       </Position17>
       <Position18>
-        <Filename Value="ConexusTS.lpr"/>
-        <Caret Line="104" Column="5" TopLine="79"/>
+        <Filename Value="TechniSatAPI.pas"/>
+        <Caret Line="870" Column="37" TopLine="864"/>
       </Position18>
       <Position19>
         <Filename Value="TechniSatAPI.pas"/>
-        <Caret Line="32" Column="32" TopLine="15"/>
+        <Caret Line="908" Column="37" TopLine="880"/>
       </Position19>
       <Position20>
         <Filename Value="TechniSatAPI.pas"/>
-        <Caret Line="33" Column="32" TopLine="15"/>
+        <Caret Line="29" Column="39" TopLine="12"/>
       </Position20>
       <Position21>
         <Filename Value="TechniSatAPI.pas"/>
-        <Caret Line="349" Column="145" TopLine="335"/>
+        <Caret Line="117" Column="21" TopLine="91"/>
       </Position21>
       <Position22>
-        <Filename Value="ConexusTS.lpr"/>
-        <Caret Line="106" Column="67" TopLine="79"/>
+        <Filename Value="TechniSatAPI.pas"/>
+        <Caret Line="971" TopLine="931"/>
       </Position22>
       <Position23>
         <Filename Value="TechniSatAPI.pas"/>
-        <Caret Line="924" Column="142" TopLine="916"/>
+        <Caret Line="35" Column="103" TopLine="18"/>
       </Position23>
       <Position24>
-        <Filename Value="TechniSatAPI.pas"/>
-        <Caret Line="251" TopLine="237"/>
+        <Filename Value="ConexusTS.lpr"/>
+        <Caret Line="450" Column="41" TopLine="423"/>
       </Position24>
       <Position25>
         <Filename Value="ConexusTS.lpr"/>
-        <Caret Line="5" Column="13"/>
+        <Caret Line="311" Column="48" TopLine="293"/>
       </Position25>
       <Position26>
         <Filename Value="ConexusTS.lpr"/>
-        <Caret Line="284" Column="24" TopLine="263"/>
+        <Caret Line="24" Column="39" TopLine="7"/>
       </Position26>
       <Position27>
-        <Filename Value="TechniSatAPI.pas"/>
-        <Caret Line="870" Column="37" TopLine="864"/>
+        <Filename Value="ConexusTS.lpr"/>
+        <Caret Line="425" Column="43" TopLine="402"/>
       </Position27>
       <Position28>
-        <Filename Value="TechniSatAPI.pas"/>
-        <Caret Line="908" Column="37" TopLine="880"/>
+        <Filename Value="ConexusTS.lpr"/>
+        <Caret Line="377" Column="68" TopLine="360"/>
       </Position28>
       <Position29>
-        <Filename Value="TechniSatAPI.pas"/>
-        <Caret Line="29" Column="39" TopLine="12"/>
+        <Filename Value="ConexusTS.lpr"/>
+        <Caret Line="370" Column="47" TopLine="349"/>
       </Position29>
       <Position30>
-        <Filename Value="TechniSatAPI.pas"/>
-        <Caret Line="117" Column="21" TopLine="91"/>
+        <Filename Value="ConexusTS.lpr"/>
+        <Caret Line="510" Column="36" TopLine="482"/>
       </Position30>
     </JumpHistory>
     <RunParams>
