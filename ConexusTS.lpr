@@ -400,9 +400,21 @@ begin
           WriteLn(STR_Warning+'Trying default PIN "0000"');
           PIN:='0000';
         end;
-      Buffer:='';
-      Buffer4:=0;
     end;
+  if TryStrToInt(PIN,Buffer4)=false then
+    begin
+      WriteLn(STR_Error+'Incorrect PIN. PIN is not strictly numeric (should be 4 numeric digits).');
+      WriteLn(STR_Warning+'Trying default PIN "0000"');
+      PIN:='0000';
+    end;
+  if Length(PIN)<>4 then
+    begin
+      WriteLn(STR_Error+'Incorrect PIN length. PIN has '+IntToStr(Length(PIN))+' digits (should be 4).');
+      WriteLn(STR_Warning+'Trying default PIN "0000"');
+      PIN:='0000';
+    end;
+  Buffer:='';
+  Buffer4:=0;
 
   //send authenticate request
   if Command='AUTHENTICATION' then
@@ -488,7 +500,7 @@ end;
 
 procedure TApp.WriteHelp;
 begin
-//long help
+//Long help
   WriteLn('General usage:          ', ExtractFileName(ExeName), ' --url=[IP or LOCAL DOMAIN] --pin=[DEVICE PIN] --sendbutton=[CODE or NAME]');
   WriteLn('                        or');
   WriteLn('                        ', ExtractFileName(ExeName), ' -u [IP or LOCAL DOMAIN] -p [DEVICE PIN] -s [CODE or NAME]');
@@ -516,7 +528,7 @@ begin
   WriteLn('                        must not be renewed.');
   WriteLn('');
   WriteLn('List of commands for use with -c (--command):');
-  WriteLn('AUTHENTICATION          Starts Authentication process.  URL and PIN are also required.');
+  WriteLn('AUTHENTICATION          Starts Authentication process. URL and PIN are also required.');
   WriteLn('DEVICEINFO              Read device info (authenticate first, no PIN needed).');
   WriteLn('KEEPALIVE               Send a keep-alive request (authenticate first, no PIN needed).');
   WriteLn('ZOOM:                   Send a zoom request (authenticate first, no PIN needed).');
