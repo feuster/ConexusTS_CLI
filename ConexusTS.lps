@@ -8,8 +8,9 @@
       <Unit0>
         <Filename Value="ConexusTS.lpr"/>
         <IsPartOfProject Value="True"/>
-        <TopLine Value="70"/>
-        <CursorPos Y="418"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="531"/>
+        <CursorPos X="61" Y="545"/>
         <UsageCount Value="74"/>
         <Bookmarks Count="2">
           <Item0 X="25" Y="450"/>
@@ -20,7 +21,6 @@
       <Unit1>
         <Filename Value="TechniSatAPI.pas"/>
         <IsPartOfProject Value="True"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
         <TopLine Value="918"/>
         <CursorPos Y="939"/>
