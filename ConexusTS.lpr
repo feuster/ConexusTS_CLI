@@ -75,12 +75,13 @@ const
   {$ENDIF}
 
   //Timeout
-  INT_Timeout:  Integer = 100;
+  INT_Timeout:      Integer = 100;
+  INT_Timeout_Max:  Integer = 1000;
 
 var
   STR_Title_Banner: String;
 
-{ Conexus }
+{ ConexusTS }
 
 procedure TApp.DoRun;
 var
@@ -93,15 +94,21 @@ var
   Buffer2:    Byte;
   Buffer3:    TStringList;
   Buffer4:    Integer;
+  Buffer5:    Integer;
+  Buffer6:    Integer;
 
 begin
   //init variables
+  ErrorMsg:='';
+  URL:='';
   PIN:='';
   Command:='';
   ButtonState:='';
   Buffer:='';
   Buffer2:=0;
   Buffer4:=0;
+  Buffer5:=0;
+  Buffer6:=0;
 
   //add CPU architecture info to title
   if STR_CPU='x86_64' then
@@ -124,7 +131,7 @@ begin
     {$ENDIF}
 
   // quick check parameters
-  ErrorMsg:=CheckOptions('hbalnidru:p:c:s:t:', 'help build api license nobanner showbanner devicelist rcucommands url: pin: command: sendbutton: buttonstate:');
+  ErrorMsg:=CheckOptions('hbalnidu:p:c:s:t:r:', 'help build api license nobanner showbanner devicelist rcucommands url: pin: command: sendbutton: buttonstate: buttonrepeat:');
   if (ErrorMsg<>'') or (ParamCount=0) then
     begin
       //write title banner
@@ -203,12 +210,12 @@ begin
       WriteLn(STR_Info,'Network broadcast scan for available TechniSat devices');
       WaitPrint;
       Buffer3:=TStringList.Create;
-      Buffer3:=tsapi_Info_DeviceList(3000);
+      Buffer3:=tsapi_Info_DeviceList(INT_Timeout_Max);
       WaitClear;
       if Buffer3.Count=0 then
         begin
           WriteLn(STR_Info,'First try did not found any available devices. Starting second try.');
-          Buffer3:=tsapi_Info_DeviceList(3000);
+          Buffer3:=tsapi_Info_DeviceList(INT_Timeout_Max);
           WaitClear;
           if Buffer3.Count=0 then
             begin
@@ -254,7 +261,7 @@ begin
     end;
 
   //show RCU command list
-  if HasOption('r', 'rcucommands') then
+  if HasOption('x', 'rcucommands') then
     begin
       WriteLn('');
       WriteLn(' Code |        Name        |          Description         ');
@@ -265,6 +272,23 @@ begin
         end;
       Terminate;
       Exit;
+    end;
+
+  //check for existing command
+  if HasOption('c', 'command') then
+    begin
+      if HasOption('c', 'command') then
+        Command:=UpperCase((GetOptionValue('c', 'command')));
+    end
+  else
+    begin
+      if not (HasOption('s', 'sendbutton')) then
+        begin
+          WriteLn(STR_Error+'No command specified');
+          HelpHint;
+          Terminate;
+          Exit;
+        end;
     end;
 
   //check URL
@@ -298,23 +322,6 @@ begin
       HelpHint;
       Terminate;
       Exit;
-    end;
-
-  //check for existing command
-  if HasOption('c', 'command') then
-    begin
-      if HasOption('c', 'command') then
-        Command:=UpperCase((GetOptionValue('c', 'command')));
-    end
-  else
-    begin
-      if not (HasOption('s', 'sendbutton')) then
-        begin
-          WriteLn(STR_Error+'No command specified');
-          HelpHint;
-          Terminate;
-          Exit;
-        end;
     end;
 
   //read device information
@@ -381,7 +388,6 @@ begin
       Exit;
     end;
 
-
   //PIN check
   if HasOption('p', 'pin') then
     begin
@@ -442,6 +448,36 @@ begin
             end;
         end;
 
+      //check ButtonState
+      if HasOption('t', 'buttonstate') then
+        begin
+          ButtonState:=(GetOptionValue('t', 'buttonstate'));
+          //check if ButtonState is correct
+          if AnsiIndexText(ButtonState, tsapi_ButtonStates)<0 then
+            begin
+              WriteLn(STR_Info,'Button state "'+ButtonState+'" not allowed. ButtonState removed!');
+              ButtonState:='';
+            end;
+        end;
+
+      //check button repeat
+      if HasOption('r', 'buttonrepeat') then
+        begin
+          Buffer:=(GetOptionValue('r', 'buttonrepeat'));
+          if TryStrToInt(Buffer, Buffer5)=false then
+            begin
+              WriteLn(STR_Info,'Button repeat "'+Buffer+'" not allowed. Button repeat removed!');
+              Buffer5:=1;
+            end;
+          if Buffer5<1 then
+            begin
+              WriteLn(STR_Info,'Negative button repeat "'+IntToStr(Buffer5)+'" not allowed. Button repeat removed!');
+              Buffer5:=1;
+            end;
+        end
+      else
+        Buffer5:=1;
+
       //send button
       Command:=UpperCase((GetOptionValue('s', 'sendbutton')));
       Buffer4:=tsapi_BtnCodeByName(Command);
@@ -457,22 +493,35 @@ begin
         end;
       if ButtonState='' then
         begin
-          if tsapi_rcuButtonRequest(URL, PIN, Buffer4, tsapi_ButtonStates[0], INT_Timeout)=true then
+          //optionally repeat send button
+          for Buffer6:=1 to Buffer5 do
             begin
-              if tsapi_rcuButtonRequest(URL, PIN, Buffer4, tsapi_ButtonStates[1], INT_Timeout)=true then
-                WriteLn(STR_Info,'Sendbutton "'+tsapi_BtnDescByCode(Buffer4)+'" should be successful!')
+              if tsapi_rcuButtonRequest(URL, PIN, Buffer4, tsapi_ButtonStates[0], INT_Timeout)=true then
+                begin
+                  if tsapi_rcuButtonRequest(URL, PIN, Buffer4, tsapi_ButtonStates[1], INT_Timeout)=true then
+                    WriteLn(STR_Info,'Sendbutton "'+tsapi_BtnDescByCode(Buffer4)+'" should be successful!')
+                  else
+                    WriteLn(STR_Info,'Sendbutton "'+tsapi_BtnDescByCode(Buffer4)+'" failed (possibly device not found/inactive or wrong PIN)!');
+                end
               else
                 WriteLn(STR_Info,'Sendbutton "'+tsapi_BtnDescByCode(Buffer4)+'" failed (possibly device not found/inactive or wrong PIN)!');
-            end
-          else
-            WriteLn(STR_Info,'Sendbutton "'+tsapi_BtnDescByCode(Buffer4)+'" failed (possibly device not found/inactive or wrong PIN)!');
+              //in case of sending multiple times do a pause
+              if Buffer5>1 then
+                Sleep(100);
+            end;
         end
       else
         begin
-          if tsapi_rcuButtonRequest(URL, PIN, Buffer4, ButtonState, INT_Timeout)=true then
-            WriteLn(STR_Info,'Sendbutton "'+tsapi_BtnDescByCode(Buffer4)+'" with "'+ButtonState+'" should be successful!')
-          else
-            WriteLn(STR_Info,'Sendbutton "'+tsapi_BtnDescByCode(Buffer4)+'" with "'+ButtonState+'" failed (possibly device not found/inactive or wrong PIN)!');
+          for Buffer6:=1 to Buffer5 do
+            begin
+              if tsapi_rcuButtonRequest(URL, PIN, Buffer4, ButtonState, INT_Timeout)=true then
+                WriteLn(STR_Info,'Sendbutton "'+tsapi_BtnDescByCode(Buffer4)+'" with "'+ButtonState+'" should be successful!')
+              else
+                WriteLn(STR_Info,'Sendbutton "'+tsapi_BtnDescByCode(Buffer4)+'" with "'+ButtonState+'" failed (possibly device not found/inactive or wrong PIN)!');
+              //in case of sending multiple times do a pause
+              if Buffer5>1 then
+                Sleep(100);
+            end;
         end;
     end
   else
@@ -518,7 +567,7 @@ begin
   WriteLn('                        ', ExtractFileName(ExeName), ' --url="@0008abcdef123456" -p 1234 -s 12');
   WriteLn('                        ', ExtractFileName(ExeName), ' -u TECHNIVISTA-SL.fritz.box -p 9999 -c keepalive');
   WriteLn('                        ', ExtractFileName(ExeName), ' -u "@TECHNIBOX UHD S" -p 1234 -s 12');
-  WriteLn('                        ', ExtractFileName(ExeName), ' --url=192.168.0.34 -p 1234 -s 12 --buttonstate="pressed"');
+  WriteLn('                        ', ExtractFileName(ExeName), ' --url=192.168.0.34 -p 1234 -s BTN_1 --buttonstate="pressed" --buttonrepeat=2');
   WriteLn('                        ', ExtractFileName(ExeName), ' --url=192.168.0.34 -p 1234 --command="zoom:-2"');
   WriteLn('');
   WriteLn('Usage hints:            Values with one or more spaces the value must be quoted with " (for e.g. "@DEVICENAME").');
@@ -556,6 +605,8 @@ begin
   WriteLn('                   Allowed states are "pressed", "released" and "hold".');
   WriteLn('                   Depending on the send RCU button the sendbutton command must be used twice');
   WriteLn('                   one time with "pressed" and again with "released".'+#13#10);
+  WriteLn('Use button repeat  ', ExtractFileName(ExeName), ' -r (--buttonrepeat)');
+  WriteLn('                   Optionally defines how often to send the same RCU button. Default is one time.'+#13#10);
   WriteLn('Help:              ', ExtractFileName(ExeName), ' -h (--help)');
   WriteLn('                   Show this help text.'+#13#10);
   WriteLn('Build info:        ', ExtractFileName(ExeName), ' -b (--build)');
@@ -571,7 +622,7 @@ begin
   WriteLn('Device list:       ', ExtractFileName(ExeName), ' -d (--devicelist)');
   WriteLn('                   Broadcast network scan of supported active devices if available.');
   WriteLn('                   This scan may take up around to 5 seconds.'+#13#10);
-  WriteLn('RCU command list:  ', ExtractFileName(ExeName), ' -r (--rcucommands)');
+  WriteLn('RCU command list:  ', ExtractFileName(ExeName), ' -x (--rcucommands)');
   WriteLn('                   Show all available RCU commands with code, name and description.');
 end;
 
