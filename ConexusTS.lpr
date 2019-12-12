@@ -686,6 +686,8 @@ begin
   WriteLn('                   This scan may take up around to 5 seconds.'+#13#10);
   WriteLn('RCU command list:  ', ExtractFileName(ExeName), ' -x (--rcucommands)');
   WriteLn('                   Show all available RCU commands with code, name and description.');
+  WriteLn('                   Button names start with "BTN_" but for compability issues also "KEY_" is allowed.);
+  WriteLn('                   For e.g. "KEY_OK" can be used as equal replacement for "BTN_OK".'+#13#10);
 end;
 
 procedure TApp.HelpHint;
