@@ -369,25 +369,6 @@ begin
       Exit;
     end;
 
-  //send zoom request
-  if AnsiLeftStr(Command,4)='ZOOM' then
-    begin
-      Buffer3:=TStringList.Create;
-      Buffer3.Text:=Command;
-      if Buffer3.Strings[0].Split(':')[1]<>'' then
-        begin
-          Buffer4:=StrToInt(Buffer3.Strings[0].Split(':')[1]);
-          if tsapi_zoomRequest(URL, PIN, Buffer4, INT_Timeout)=true then
-            WriteLn(STR_Info,'Zoom request with value "'+IntToStr(Buffer4)+'" should be successful!')
-          else
-            WriteLn(STR_Info,'Zoom request with value "'+IntToStr(Buffer4)+'" failed (possibly device not found/inactive or wrong PIN)!');
-        end
-      else
-        WriteLn(STR_Info,'Zoom request has no value!');
-      Terminate;
-      Exit;
-    end;
-
   //PIN check
   if HasOption('p', 'pin') then
     begin
@@ -422,6 +403,92 @@ begin
   Buffer:='';
   Buffer4:=0;
 
+  //send zoom request
+  if AnsiLeftStr(Command,4)='ZOOM' then
+    begin
+      Buffer3:=TStringList.Create;
+      Buffer3.Text:=Command;
+      if Buffer3.Strings[0].Split(':')[1]<>'' then
+        begin
+          Buffer4:=StrToInt(Buffer3.Strings[0].Split(':')[1]);
+          if tsapi_zoomRequest(URL, PIN, Buffer4, INT_Timeout)=true then
+            WriteLn(STR_Info,'Zoom request with value "'+IntToStr(Buffer4)+'" should be successful!')
+          else
+            WriteLn(STR_Info,'Zoom request with value "'+IntToStr(Buffer4)+'" failed (possibly device not found/inactive or wrong PIN)!');
+        end
+      else
+        WriteLn(STR_Info,'Zoom request has no value!');
+      Terminate;
+      Exit;
+    end;
+
+  //send mouse move request
+  if AnsiLeftStr(Command,9)='MOUSEMOVE' then
+    begin
+      Buffer3:=TStringList.Create;
+      Buffer3.Text:=Command;
+      if (Buffer3.Strings[0].Split(':')[1]<>'') and (Buffer3.Strings[0].Split(':')[2]<>'') then
+        begin
+          Buffer4:=StrToInt(Buffer3.Strings[0].Split(':')[1]);
+          Buffer5:=StrToInt(Buffer3.Strings[0].Split(':')[2]);
+          if tsapi_mouseMoveRequest(URL, PIN, Buffer4, Buffer5, INT_Timeout)=true then
+            WriteLn(STR_Info,'Mouse move request with X/Y values "'+IntToStr(Buffer4)+':'+IntToStr(Buffer5)+'" should be successful!')
+          else
+            WriteLn(STR_Info,'Mouse move request with X/Y values "'+IntToStr(Buffer4)+':'+IntToStr(Buffer5)+'" failed (possibly device not found/inactive or wrong PIN)!');
+        end
+      else
+        WriteLn(STR_Info,'Mouse move request has incomplete X/Y values!');
+      Terminate;
+      Exit;
+    end;
+
+  //send mouse scroll request
+  if AnsiLeftStr(Command,11)='MOUSESCROLL' then
+    begin
+      Buffer3:=TStringList.Create;
+      Buffer3.Text:=Command;
+      if Buffer3.Strings[0].Split(':')[1]<>'' then
+        begin
+          Buffer4:=StrToInt(Buffer3.Strings[0].Split(':')[1]);
+          if tsapi_mouseScrollRequest(URL, PIN, Buffer4, INT_Timeout)=true then
+            WriteLn(STR_Info,'Mouse scroll request with value "'+IntToStr(Buffer4)+'" should be successful!')
+          else
+            WriteLn(STR_Info,'Mouse scroll request with value "'+IntToStr(Buffer4)+'" failed (possibly device not found/inactive or wrong PIN)!');
+        end
+      else
+        WriteLn(STR_Info,'Mouse scroll request has no value!');
+      Terminate;
+      Exit;
+    end;
+
+  //send mouse button click request
+  if AnsiLeftStr(Command,10)='MOUSECLICK' then
+    begin
+      Buffer3:=TStringList.Create;
+      Buffer3.Text:=Command;
+      if Buffer3.Strings[0].Split(':')[1]<>'' then
+        begin
+          if AnsiIndexText(LowerCase(Buffer3.Strings[0].Split(':')[1]), tsapi_MouseButtons)>-1 then
+            begin
+              if tsapi_mouseClickRequest(URL, PIN, LowerCase(Buffer3.Strings[0].Split(':')[1]), tsapi_MouseState_pressed, INT_Timeout)=true then
+                begin
+                  if tsapi_mouseClickRequest(URL, PIN, LowerCase(Buffer3.Strings[0].Split(':')[1]), tsapi_MouseState_released, INT_Timeout)=true then
+                    WriteLn(STR_Info,'Mouse button click request with value "'+Buffer3.Strings[0].Split(':')[1]+'" should be successful!')
+                  else
+                    WriteLn(STR_Info,'Mouse button click request with value "'+Buffer3.Strings[0].Split(':')[1]+'" failed!');
+                end
+              else
+                WriteLn(STR_Info,'Mouse button click request with value "'+Buffer3.Strings[0].Split(':')[1]+'" failed (possibly device not found/inactive or wrong PIN)!');
+            end
+          else
+            WriteLn(STR_Info,'Mouse button click request with wrong button value "'+Buffer3.Strings[0].Split(':')[1]+'"!');
+        end
+      else
+        WriteLn(STR_Info,'Mouse button click request has no button value!');
+      Terminate;
+      Exit;
+    end;
+
   //send authenticate request
   if Command='AUTHENTICATION' then
     begin
@@ -439,19 +506,7 @@ begin
       //check ButtonState
       if HasOption('t', 'buttonstate') then
         begin
-          ButtonState:=(GetOptionValue('t', 'buttonstate'));
-          //check if ButtonState is correct
-          if AnsiIndexText(ButtonState, tsapi_ButtonStates)<0 then
-            begin
-              WriteLn(STR_Info,'Button state "'+ButtonState+'" not allowed. ButtonState removed!');
-              ButtonState:='';
-            end;
-        end;
-
-      //check ButtonState
-      if HasOption('t', 'buttonstate') then
-        begin
-          ButtonState:=(GetOptionValue('t', 'buttonstate'));
+          ButtonState:=LowerCase(GetOptionValue('t', 'buttonstate'));
           //check if ButtonState is correct
           if AnsiIndexText(ButtonState, tsapi_ButtonStates)<0 then
             begin
@@ -569,6 +624,8 @@ begin
   WriteLn('                        ', ExtractFileName(ExeName), ' -u "@TECHNIBOX UHD S" -p 1234 -s 12');
   WriteLn('                        ', ExtractFileName(ExeName), ' --url=192.168.0.34 -p 1234 -s BTN_1 --buttonstate="pressed" --buttonrepeat=2');
   WriteLn('                        ', ExtractFileName(ExeName), ' --url=192.168.0.34 -p 1234 --command="zoom:-2"');
+  WriteLn('                        ', ExtractFileName(ExeName), ' --url=192.168.0.34 -p 1234 --command="mousemove:-15:10"');
+  WriteLn('                        ', ExtractFileName(ExeName), ' --url=192.168.0.34 -p 1234 --command="mouseclick:left"');
   WriteLn('');
   WriteLn('Usage hints:            Values with one or more spaces the value must be quoted with " (for e.g. "@DEVICENAME").');
   WriteLn('                        Some commands need additional values. These values are added with ":" after the command.');
@@ -580,8 +637,13 @@ begin
   WriteLn('AUTHENTICATION          Starts Authentication process. URL and PIN are also required.');
   WriteLn('DEVICEINFO              Read device info (authenticate first, no PIN needed).');
   WriteLn('KEEPALIVE               Send a keep-alive request (authenticate first, no PIN needed).');
-  WriteLn('ZOOM:                   Send a zoom request in browser mode (authenticate first, no PIN needed).');
+  WriteLn('ZOOM:                   Send a zoom request in browser mode.');
   WriteLn('                        ZOOM IN with a positive value, for e.g. 1, and ZOOM OUT with a negative value, for e.g. -1.');
+  WriteLn('MOUSEMOVE:              Send a mouse move request in browser mode.');
+  WriteLn('                        This needs 2 values for X and Y axis. Positive values go right/down, negative values left/up.');
+  WriteLn('                        Example: MOUSEMOVE:-10:20');
+  WriteLn('MOUSECLICK:             Send a mouse click request in browser mode.');
+  WriteLn('                        This needs a button value left, middle or right.');
   WriteLn('');
   WriteLn('Program functions:');
   WriteLn('Special commands   ', ExtractFileName(ExeName), ' -c (--command)');
