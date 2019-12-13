@@ -89,6 +89,7 @@ var
   URL:        String;
   PIN:        String;
   Command:    String;
+  Command2:   String;
   ButtonState:String;
   Buffer:     String;
   Buffer2:    Byte;
@@ -103,6 +104,7 @@ begin
   URL:='';
   PIN:='';
   Command:='';
+  Command2:='';
   ButtonState:='';
   Buffer:='';
   Buffer2:=0;
@@ -278,7 +280,10 @@ begin
   if HasOption('c', 'command') then
     begin
       if HasOption('c', 'command') then
-        Command:=UpperCase((GetOptionValue('c', 'command')));
+        begin
+          Command2:=GetOptionValue('c', 'command');
+          Command:=UpperCase(Command2);
+        end;
     end
   else
     begin
@@ -418,6 +423,31 @@ begin
         end
       else
         WriteLn(STR_Info,'Zoom request has no value!');
+      Terminate;
+      Exit;
+    end;
+
+  //send input text request
+  if AnsiLeftStr(Command,4)='TEXT' then
+    begin
+      Buffer3:=TStringList.Create;
+      Buffer3.Text:=Command2;
+      Buffer:=Buffer3.Strings[0].Split(':')[1];
+      if AnsiRightStr(UpperCase(Buffer),3)<>'/CR' then
+        begin
+          if tsapi_inputTextRequest(URL, PIN, Buffer, false, INT_Timeout)=true then
+            WriteLn(STR_Info,'Text input request with "'+Buffer+'" should be successful!')
+          else
+            WriteLn(STR_Info,'Text input request with "'+Buffer+'" failed (possibly device not found/inactive or wrong PIN)!');
+        end
+      else
+        begin
+          Buffer:=AnsiLeftStr(Buffer,Length(Buffer)-3);
+          if tsapi_inputTextRequest(URL, PIN, Buffer, true, INT_Timeout)=true then
+            WriteLn(STR_Info,'Text input request with "'+Buffer+'" + ENTER should be successful!')
+          else
+            WriteLn(STR_Info,'Text input request with "'+Buffer+'" + ENTER failed (possibly device not found/inactive or wrong PIN)!');
+        end;
       Terminate;
       Exit;
     end;
@@ -644,6 +674,7 @@ begin
   WriteLn('                        Example: MOUSEMOVE:-10:20');
   WriteLn('MOUSECLICK:             Send a mouse click request in browser mode.');
   WriteLn('                        This needs a button value left, middle or right.');
+  WriteLn('TEXT:                   Send a text when virtual keyboard is open. Add /CR and the end of the text for sending an ENTER.');
   WriteLn('');
   WriteLn('Program functions:');
   WriteLn('Special commands   ', ExtractFileName(ExeName), ' -c (--command)');
@@ -686,7 +717,7 @@ begin
   WriteLn('                   This scan may take up around to 5 seconds.'+#13#10);
   WriteLn('RCU command list:  ', ExtractFileName(ExeName), ' -x (--rcucommands)');
   WriteLn('                   Show all available RCU commands with code, name and description.');
-  WriteLn('                   Button names start with "BTN_" but for compability issues also "KEY_" is allowed.);
+  WriteLn('                   Button names start with "BTN_" but for compability issues also "KEY_" is allowed.');
   WriteLn('                   For e.g. "KEY_OK" can be used as equal replacement for "BTN_OK".'+#13#10);
 end;
 
