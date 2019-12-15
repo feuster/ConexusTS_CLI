@@ -21,7 +21,7 @@ uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
   {$ENDIF}{$ENDIF}
-  Classes, SysUtils, CustApp, StrUtils, TechniSatAPI
+  Classes, SysUtils, CustApp, StrUtils, Keyboard, TechniSatAPI
   { you can add units after this };
 
 type
@@ -38,6 +38,7 @@ type
     procedure HelpHint; virtual;
     procedure WaitPrint; virtual;
     procedure WaitClear; virtual;
+    procedure ButtonRequest(URL: String; PIN: String; Button: Byte; INT_Timeout: Integer); virtual;
   end;
 
 const
@@ -97,6 +98,7 @@ var
   Buffer4:    Integer;
   Buffer5:    Integer;
   Buffer6:    Integer;
+  Buffer7:    TKeyEvent;
 
 begin
   //init variables
@@ -133,7 +135,7 @@ begin
     {$ENDIF}
 
   // quick check parameters
-  ErrorMsg:=CheckOptions('hbalnidu:p:c:s:t:r:', 'help build api license nobanner showbanner devicelist rcucommands url: pin: command: sendbutton: buttonstate: buttonrepeat:');
+  ErrorMsg:=CheckOptions('hbalnidxu:p:c:s:t:r:oy', 'help build api license nobanner showbanner devicelist rcucommands url: pin: command: sendbutton: buttonstate: buttonrepeat: loop loopcommands');
   if (ErrorMsg<>'') or (ParamCount=0) then
     begin
       //write title banner
@@ -276,6 +278,61 @@ begin
       Exit;
     end;
 
+  //show loop command list
+  if HasOption('y', 'loopcommands') then
+    begin
+      WriteLn('');
+      WriteLn(' Key Name | Function ');
+      WriteLn('----------|----------');
+      WriteLn('0         |Button 0');
+      WriteLn('1         |Button 1');
+      WriteLn('2         |Button 2');
+      WriteLn('3         |Button 3');
+      WriteLn('4         |Button 4');
+      WriteLn('5         |Button 5');
+      WriteLn('6         |Button 6');
+      WriteLn('7         |Button 7');
+      WriteLn('8         |Button 8');
+      WriteLn('9         |Button 9');
+      WriteLn('UP        |Up');
+      WriteLn('DOWN      |Down');
+      WriteLn('LEFT      |Left');
+      WriteLn('RIGHT     |Right');
+      WriteLn('ENTER     |OK');
+      WriteLn('PAGE UP   |Page up');
+      WriteLn('PAGE DOWN |Page down');
+      WriteLn('INSERT    |Program up');
+      WriteLn('DELETE    |Program down');
+      WriteLn('A         |Audio');
+      WriteLn('B         |Back/Exit');
+      WriteLn('E         |EPG/SFI');
+      WriteLn('H         |HDMI');
+      WriteLn('I         |Info');
+      WriteLn('L         |TV/Radio list');
+      WriteLn('M         |Menu');
+      WriteLn('N         |Navigation');
+      WriteLn('O         |Option');
+      WriteLn('P         |PiP/PaP');
+      WriteLn('R         |Record');
+      WriteLn('S         |Standby');
+      WriteLn('T         |Teletext');
+      WriteLn('V         |Volume mute');
+      WriteLn('X         |Timer');
+      WriteLn('Y         |Still picture');
+      WriteLn('Z         |Zoom');
+      WriteLn('F1        |Red');
+      WriteLn('F2        |Green');
+      WriteLn('F3        |Yellow');
+      WriteLn('F4        |Blue');
+      WriteLn('F5        |Rewind');
+      WriteLn('F6        |Stop');
+      WriteLn('F7        |Play/Pause');
+      WriteLn('F8        |Forward wind');
+      WriteLn(STR_Info+'All key mappings depend on a QWERTZ keyboard layout.');
+      Terminate;
+      Exit;
+    end;
+
   //check for existing command
   if HasOption('c', 'command') then
     begin
@@ -287,7 +344,7 @@ begin
     end
   else
     begin
-      if not (HasOption('s', 'sendbutton')) then
+      if not ((HasOption('s', 'sendbutton')) or (HasOption('o', 'loop'))) then
         begin
           WriteLn(STR_Error+'No command specified');
           HelpHint;
@@ -611,12 +668,80 @@ begin
     end
   else
     begin
-      WriteLn(STR_Error+'No RCU code or button specified');
-      HelpHint;
-      Terminate;
-      Exit;
+      if not (HasOption('o', 'loop')) then
+        begin
+          WriteLn(STR_Error+'No RCU code or button specified');
+          HelpHint;
+          Terminate;
+          Exit;
+        end;
     end;
 
+  //start remote loop
+  if HasOption('o', 'loop') then
+    begin
+      writeln(STR_Info+'Loop entered. Press a key for a remote action. Leave loop with [CTRL+C] or [ESC].');
+      while true do
+        begin
+          InitKeyboard;
+          if KeyPressed then
+            begin
+              Buffer7:=PollKeyEvent;
+              {$IFDEF PROG_DEBUG}
+              writeln(STR_Debug+KeyEventToString(Buffer7));
+              {$ENDIF}
+              case GetKeyEventCode(Buffer7) of
+                283:    begin writeln(STR_Info+'[ESC] Leaving loop.'); break; end;
+                561:    begin ButtonRequest(URL, PIN, 1, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(1)); end;   //1
+                818:    begin ButtonRequest(URL, PIN, 2, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(2)); end;   //2
+                1075:   begin ButtonRequest(URL, PIN, 3, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(3)); end;   //3
+                1332:   begin ButtonRequest(URL, PIN, 4, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(4)); end;   //4
+                1589:   begin ButtonRequest(URL, PIN, 5, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(5)); end;   //5
+                1846:   begin ButtonRequest(URL, PIN, 6, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(6)); end;   //6
+                2103:   begin ButtonRequest(URL, PIN, 7, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(7)); end;   //7
+                2360:   begin ButtonRequest(URL, PIN, 8, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(8)); end;   //8
+                2617:   begin ButtonRequest(URL, PIN, 9, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(9)); end;   //9
+                2864:   begin ButtonRequest(URL, PIN, 0, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(0)); end;   //0
+                20736:  begin ButtonRequest(URL, PIN, 64, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(64)); end; //page down
+                18688:  begin ButtonRequest(URL, PIN, 63, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(63)); end; //page up
+                20480:  begin ButtonRequest(URL, PIN, 31, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(31)); end; //down
+                18432:  begin ButtonRequest(URL, PIN, 30, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(30)); end; //up
+                19200:  begin ButtonRequest(URL, PIN, 34, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(34)); end; //left
+                19712:  begin ButtonRequest(URL, PIN, 35, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(35)); end; //right
+                7181:   begin ButtonRequest(URL, PIN, 36, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(36)); end; //ok
+                12654:  begin ButtonRequest(URL, PIN, 62, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(62)); end; //nav
+                12909:  begin ButtonRequest(URL, PIN, 32, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(32)); end; //menu
+                11386:  begin ButtonRequest(URL, PIN, 45, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(45)); end; //zoom
+                6512:   begin ButtonRequest(URL, PIN, 44, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(44)); end; //pip/pap
+                9064:   begin ButtonRequest(URL, PIN, 47, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(47)); end; //hdmi
+                6255:   begin ButtonRequest(URL, PIN, 41, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(41)); end; //option
+                5236:   begin ButtonRequest(URL, PIN, 25, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(25)); end; //teletext
+                12386:  begin ButtonRequest(URL, PIN, 20, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(20)); end; //back
+                5993:   begin ButtonRequest(URL, PIN, 29, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(29)); end; //info
+                4709:   begin ButtonRequest(URL, PIN, 23, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(23)); end; //epg
+                9836:   begin ButtonRequest(URL, PIN, 33, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(33)); end; //tv/radio
+                8051:   begin ButtonRequest(URL, PIN, 11, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(11)); end; //standby
+                12150:  begin ButtonRequest(URL, PIN, 12, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(12)); end; //mute
+                7777:   begin ButtonRequest(URL, PIN, 21, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(21)); end; //audio
+                11640:  begin ButtonRequest(URL, PIN, 67, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(67)); end; //timer
+                5497:   begin ButtonRequest(URL, PIN, 22, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(22)); end; //still
+                20992:  begin ButtonRequest(URL, PIN, 18, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(18)); end; //prog+
+                21248:  begin ButtonRequest(URL, PIN, 19, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(19)); end; //prog-
+                15104:  begin ButtonRequest(URL, PIN, 37, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(37)); end; //red
+                15360:  begin ButtonRequest(URL, PIN, 38, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(38)); end; //green
+                15616:  begin ButtonRequest(URL, PIN, 39, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(39)); end; //yellow
+                15872:  begin ButtonRequest(URL, PIN, 40, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(40)); end; //blue
+                16128:  begin ButtonRequest(URL, PIN, 49, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(49)); end; //rewind
+                16384:  begin ButtonRequest(URL, PIN, 50, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(50)); end; //stop
+                16640:  begin ButtonRequest(URL, PIN, 51, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(51)); end; //play/pause
+                16896:  begin ButtonRequest(URL, PIN, 52, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(52)); end; //forward
+                4978:   begin ButtonRequest(URL, PIN, 43, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(43)); end; //record
+                else writeln(STR_Info+'Unknown or not supported key '+IntToStr(GetKeyEventCode(Buffer7)));
+              end;
+              DoneKeyboard;
+            end;
+        end;
+    end;
   // stop program loop
   Terminate;
 end;
@@ -646,6 +771,10 @@ begin
   WriteLn('                        ', ExtractFileName(ExeName), ' --url=[IP or LOCAL DOMAIN] --pin=[DEVICE PIN] --command=[COMMAND]:[+/-VALUE]');
   WriteLn('                        or');
   WriteLn('                        ', ExtractFileName(ExeName), ' -u [IP or LOCAL DOMAIN] -p [DEVICE PIN] -c [COMMAND]:[+/-VALUE]');
+  WriteLn('                        or');
+  WriteLn('                        ', ExtractFileName(ExeName), ' --url=[IP or LOCAL DOMAIN] --pin=[DEVICE PIN] --loop');
+  WriteLn('                        or');
+  WriteLn('                        ', ExtractFileName(ExeName), ' -u [IP or LOCAL DOMAIN] -p [DEVICE PIN] -o');
   WriteLn('');
   WriteLn('General usage examples: ', ExtractFileName(ExeName), ' --url=192.168.0.34 --pin=1234 --sendbutton=BTN_OK');
   WriteLn('                        ', ExtractFileName(ExeName), ' --url=192.168.0.34 --pin=1234 --command=DEVICEINFO');
@@ -653,6 +782,7 @@ begin
   WriteLn('                        ', ExtractFileName(ExeName), ' -u TECHNIVISTA-SL.fritz.box -p 9999 -c keepalive');
   WriteLn('                        ', ExtractFileName(ExeName), ' -u "@TECHNIBOX UHD S" -p 1234 -s 12');
   WriteLn('                        ', ExtractFileName(ExeName), ' --url=192.168.0.34 -p 1234 -s BTN_1 --buttonstate="pressed" --buttonrepeat=2');
+  WriteLn('                        ', ExtractFileName(ExeName), ' --url=192.168.0.34 -p 1234 -o');
   WriteLn('                        ', ExtractFileName(ExeName), ' --url=192.168.0.34 -p 1234 --command="zoom:-2"');
   WriteLn('                        ', ExtractFileName(ExeName), ' --url=192.168.0.34 -p 1234 --command="mousemove:-15:10"');
   WriteLn('                        ', ExtractFileName(ExeName), ' --url=192.168.0.34 -p 1234 --command="mouseclick:left"');
@@ -677,9 +807,12 @@ begin
   WriteLn('TEXT:                   Send a text when virtual keyboard is open. Add /CR and the end of the text for sending an ENTER.');
   WriteLn('');
   WriteLn('Program functions:');
-  WriteLn('Special commands   ', ExtractFileName(ExeName), ' -c (--command)');
+  WriteLn('Special commands:  ', ExtractFileName(ExeName), ' -c (--command)');
   WriteLn('                   Send a special command.'+#13#10);
-  WriteLn('Target device URL  ', ExtractFileName(ExeName), ' -u (--URL)');
+  WriteLn('Device list:       ', ExtractFileName(ExeName), ' -d (--devicelist)');
+  WriteLn('                   Broadcast network scan of supported active devices if available.');
+  WriteLn('                   This scan may take up around to 5 seconds.'+#13#10);
+  WriteLn('Target device URL: ', ExtractFileName(ExeName), ' -u (--url)');
   WriteLn('                   This defines the target device URL adress. This might be a local IP or domain.');
   WriteLn('                   Optionally the device name or serial can be used with a preceding @, for e.g. -u "@DIGIPLUS UHD S".');
   WriteLn('                   The serial should start with 0008xxxxxxxxxxxx.');
@@ -689,17 +822,27 @@ begin
   WriteLn('                   Using the device name is not recommended if more devices are using the same name within the ');
   WriteLn('                   same network. In this case the IP or device serial should be preferred over the name.');
   WriteLn('                   Using the name or serial instead of the IP slows down the RCU sendbutton process a little bit.'+#13#10);
-  WriteLn('PIN                ', ExtractFileName(ExeName), ' -p (--pin)');
+  WriteLn('PIN:               ', ExtractFileName(ExeName), ' -p (--pin)');
   WriteLn('                   PIN for the authentication. The PIN can only be set in the target device.'+#13#10);
-  WriteLn('Send RCU button    ', ExtractFileName(ExeName), ' -s (--sendbutton)');
+  WriteLn('Send RCU button:   ', ExtractFileName(ExeName), ' -s (--sendbutton)');
   WriteLn('                   Send a RCU button. URL and PIN are also required. See possible buttons with -r (--rcucommands).'+#13#10);
-  WriteLn('Use button state   ', ExtractFileName(ExeName), ' -t (--buttonstate)');
+  WriteLn('RCU command list:  ', ExtractFileName(ExeName), ' -x (--rcucommands)');
+  WriteLn('                   Show all available RCU commands with code, name and description.');
+  WriteLn('                   Button names start with "BTN_" but for compability issues also "KEY_" is allowed.');
+  WriteLn('                   For e.g. "KEY_OK" can be used as equal replacement for "BTN_OK".'+#13#10);
+  WriteLn('Use button state:  ', ExtractFileName(ExeName), ' -t (--buttonstate)');
   WriteLn('                   Optionally defines a state for the to send RCU button.');
   WriteLn('                   Allowed states are "pressed", "released" and "hold".');
   WriteLn('                   Depending on the send RCU button the sendbutton command must be used twice');
   WriteLn('                   one time with "pressed" and again with "released".'+#13#10);
-  WriteLn('Use button repeat  ', ExtractFileName(ExeName), ' -r (--buttonrepeat)');
+  WriteLn('Use button repeat: ', ExtractFileName(ExeName), ' -r (--buttonrepeat)');
   WriteLn('                   Optionally defines how often to send the same RCU button. Default is one time.'+#13#10);
+  WriteLn('Loop:              ', ExtractFileName(ExeName), ' -o (--loop)');
+  WriteLn('                   Enter loop mode. URL and PIN are also required.');
+  WriteLn('                   In loop mode it is possible to send continuously buttons to the target device via keyboard keys.');
+  WriteLn('                   The programm window must be in foreground/active to catch key presses.'+#13#10);
+  WriteLn('Loop command list: ', ExtractFileName(ExeName), ' -y (--loopcommands)');
+  WriteLn('                   Show all available loop commands with with the mapped keyboard key.'+#13#10);
   WriteLn('Help:              ', ExtractFileName(ExeName), ' -h (--help)');
   WriteLn('                   Show this help text.'+#13#10);
   WriteLn('Build info:        ', ExtractFileName(ExeName), ' -b (--build)');
@@ -712,13 +855,6 @@ begin
   WriteLn('                   Just show the banner (overrides -n --nobanner).'+#13#10);
   WriteLn('License info:      ', ExtractFileName(ExeName), ' -l (--license)');
   WriteLn('                   Show license info.'+#13#10);
-  WriteLn('Device list:       ', ExtractFileName(ExeName), ' -d (--devicelist)');
-  WriteLn('                   Broadcast network scan of supported active devices if available.');
-  WriteLn('                   This scan may take up around to 5 seconds.'+#13#10);
-  WriteLn('RCU command list:  ', ExtractFileName(ExeName), ' -x (--rcucommands)');
-  WriteLn('                   Show all available RCU commands with code, name and description.');
-  WriteLn('                   Button names start with "BTN_" but for compability issues also "KEY_" is allowed.');
-  WriteLn('                   For e.g. "KEY_OK" can be used as equal replacement for "BTN_OK".'+#13#10);
 end;
 
 procedure TApp.HelpHint;
@@ -738,6 +874,13 @@ procedure TApp.WaitClear;
 //clear waiting hint
 begin
   Write(StringOfChar(#8, Length(STR_Info)+Length(STR_WaitingMsg))+StringOfChar(' ', Length(STR_Info)+Length(STR_WaitingMsg)));
+end;
+
+procedure TApp.ButtonRequest(URL: String; PIN: String; Button: Byte; INT_Timeout: Integer);
+//Simple sendbutton procedure without result check
+begin
+  tsapi_rcuButtonRequest(URL, PIN, Button, tsapi_ButtonStates[0], INT_Timeout);
+  tsapi_rcuButtonRequest(URL, PIN, Button, tsapi_ButtonStates[1], INT_Timeout);
 end;
 
 var
