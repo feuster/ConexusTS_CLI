@@ -21,8 +21,7 @@ uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
   {$ENDIF}{$ENDIF}
-  Classes, SysUtils, CustApp, StrUtils, Keyboard, TechniSatAPI
-  { you can add units after this };
+  Classes, SysUtils, CustApp, StrUtils, Keyboard, TechniSatAPI;
 
 type
 
@@ -113,6 +112,7 @@ begin
   Buffer4:=0;
   Buffer5:=0;
   Buffer6:=0;
+  Buffer7:=0;
 
   //add CPU architecture info to title
   if STR_CPU='x86_64' then
@@ -303,6 +303,8 @@ begin
       WriteLn('PAGE DOWN |Page down');
       WriteLn('INSERT    |Program up');
       WriteLn('DELETE    |Program down');
+      WriteLn('POS 1     |Volume +');
+      WriteLn('END       |Volume -');
       WriteLn('A         |Audio');
       WriteLn('B         |Back/Exit');
       WriteLn('E         |EPG/SFI');
@@ -706,6 +708,8 @@ begin
                 18688:  begin ButtonRequest(URL, PIN, 63, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(63)); end; //page up
                 20480:  begin ButtonRequest(URL, PIN, 31, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(31)); end; //down
                 18432:  begin ButtonRequest(URL, PIN, 30, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(30)); end; //up
+                18176:  begin ButtonRequest(URL, PIN, 15, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(15)); end; //vol+
+                20224:  begin ButtonRequest(URL, PIN, 16, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(16)); end; //vol-
                 19200:  begin ButtonRequest(URL, PIN, 34, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(34)); end; //left
                 19712:  begin ButtonRequest(URL, PIN, 35, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(35)); end; //right
                 7181:   begin ButtonRequest(URL, PIN, 36, INT_Timeout); writeln(STR_Info+tsapi_BtnDescByCode(36)); end; //ok
@@ -840,7 +844,8 @@ begin
   WriteLn('Loop:              ', ExtractFileName(ExeName), ' -o (--loop)');
   WriteLn('                   Enter loop mode. URL and PIN are also required.');
   WriteLn('                   In loop mode it is possible to send continuously buttons to the target device via keyboard keys.');
-  WriteLn('                   The programm window must be in foreground/active to catch key presses.'+#13#10);
+  WriteLn('                   The programm window must be in foreground/active to catch key presses.');
+  WriteLn('                   The loop mode can be left by pressing [ESC] or [CTRL-C].'+#13#10);
   WriteLn('Loop command list: ', ExtractFileName(ExeName), ' -y (--loopcommands)');
   WriteLn('                   Show all available loop commands with with the mapped keyboard key.'+#13#10);
   WriteLn('Help:              ', ExtractFileName(ExeName), ' -h (--help)');
